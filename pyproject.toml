@@ -1,6 +1,7 @@
-# Code style is checked with ruff:
-#   pip install ruff
+# Development checks (the same ones GitHub Actions runs on every push):
+#   pip install -r requirements-dev.txt
 #   ruff check .
+#   pytest
 
 [tool.ruff]
 line-length = 120
@@ -13,3 +14,7 @@ ignore = [
     "N802",  # method names required by Qt: paintEvent, rowCount, headerData...
     "B008",  # parent=QModelIndex() is the standard Qt idiom
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

@@ -10,6 +10,8 @@ Shows CPU, RAM, disk, temperature and, most importantly, running processes in a 
 ![PySide6](https://img.shields.io/badge/Qt-PySide6-41CD52?logo=qt&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-Linux-FCC624?logo=linux&logoColor=black)
 ![Last commit](https://img.shields.io/github/last-commit/1Batuhan1/Health-Dashboard)
+[![CI](https://github.com/1Batuhan1/Health-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/1Batuhan1/Health-Dashboard/actions/workflows/ci.yml)
+![License](https://img.shields.io/github/license/1Batuhan1/Health-Dashboard)
 
 **English** · [Türkçe](README.tr.md)
 
@@ -33,6 +35,7 @@ Shows CPU, RAM, disk, temperature and, most importantly, running processes in a 
 - [Packaging](#packaging)
 - [Troubleshooting](#troubleshooting)
 - [Roadmap](#roadmap)
+- [Development](#development)
 - [Contributing](#contributing)
 
 ## Features
@@ -159,7 +162,11 @@ Health-Dashboard/
 ├── theme.py           # Dark/light palette, Qt style sheet and fonts
 ├── formatting.py      # Byte and duration formatting
 ├── sysdash.desktop    # Linux application menu entry
-└── requirements.txt   # Python dependencies
+├── requirements.txt   # Python dependencies
+├── requirements-dev.txt  # Extra tools for development: pytest, ruff
+├── pyproject.toml     # ruff and pytest settings
+├── tests/             # Automated tests (pytest)
+└── .github/workflows/ci.yml  # Runs the linter and tests on every push
 ```
 
 ## Architecture
@@ -250,6 +257,7 @@ You can place the resulting `dist/sysdash` file in, for example, `/opt/sysdash/`
 - [x] Searchable, sortable process table
 - [x] Stopping processes
 - [x] Dark / light theme
+- [x] Automated tests and CI
 - [ ] Process details window (threads, open files, network connections)
 - [ ] Process tree view
 - [ ] Network and disk read/write speeds
@@ -258,11 +266,38 @@ You can place the resulting `dist/sysdash` file in, for example, `/opt/sysdash/`
 - [ ] Recording measurement history and exporting it
 - [ ] Security panel: suspicious processes and listening ports
 
+## Development
+
+Install the development tools in your virtual environment:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+Check the code style and run the tests:
+
+```bash
+ruff check .
+pytest
+```
+
+The tests run without a display (Qt's offscreen mode), so they also work over SSH and in CI. They cover:
+
+| Test file | What it checks |
+|---|---|
+| `test_formatting.py` | Byte and duration formatting |
+| `test_collector.py` | Data collection on the real system, plus exact behavior with fake psutil data (skipped filesystems, missing values, CPU normalization) |
+| `test_process_model.py` | Process table updates: adding, removing and updating rows in place; formatting and sort values |
+| `test_theme.py` | Warning thresholds and switching between themes |
+| `test_main_window.py` | Builds the real window, feeds it real data and checks every page |
+
+[GitHub Actions](https://github.com/1Batuhan1/Health-Dashboard/actions/workflows/ci.yml) runs the same checks on Python 3.10 and 3.13 for every push and pull request; the CI badge at the top shows the latest result.
+
 ## Contributing
 
 1. Fork the repository
 2. Create a branch: `git checkout -b feature/feature-name`
-3. Commit your changes: `git commit -m "Add: ..."`
+3. Commit your changes: `git commit -m "Add: ..."` (run `ruff check .` and `pytest` first)
 4. Push the branch: `git push origin feature/feature-name`
 5. Open a Pull Request
 

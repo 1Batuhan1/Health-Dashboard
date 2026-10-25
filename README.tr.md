@@ -10,6 +10,8 @@ CPU, RAM, disk, sıcaklık ve en önemlisi çalışan processleri tek pencerede,
 ![PySide6](https://img.shields.io/badge/Qt-PySide6-41CD52?logo=qt&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-Linux-FCC624?logo=linux&logoColor=black)
 ![Last commit](https://img.shields.io/github/last-commit/1Batuhan1/Health-Dashboard)
+[![CI](https://github.com/1Batuhan1/Health-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/1Batuhan1/Health-Dashboard/actions/workflows/ci.yml)
+![License](https://img.shields.io/github/license/1Batuhan1/Health-Dashboard)
 
 [English](README.md) · **Türkçe**
 
@@ -33,6 +35,7 @@ CPU, RAM, disk, sıcaklık ve en önemlisi çalışan processleri tek pencerede,
 - [Paketleme](#paketleme)
 - [Sorun giderme](#sorun-giderme)
 - [Yol haritası](#yol-haritası)
+- [Geliştirme](#geliştirme)
 - [Katkıda bulunma](#katkıda-bulunma)
 
 ## Özellikler
@@ -159,7 +162,11 @@ Health-Dashboard/
 ├── theme.py           # Koyu/açık renk paleti, Qt stil sayfası, yazı tipleri
 ├── formatting.py      # Bayt ve süre biçimlendirme
 ├── sysdash.desktop    # Linux uygulama menüsü girdisi
-└── requirements.txt   # Python bağımlılıkları
+├── requirements.txt   # Python bağımlılıkları
+├── requirements-dev.txt  # Geliştirme araçları: pytest, ruff
+├── pyproject.toml     # ruff ve pytest ayarları
+├── tests/             # Otomatik testler (pytest)
+└── .github/workflows/ci.yml  # Her push'ta linter'ı ve testleri çalıştırır
 ```
 
 ## Mimari
@@ -250,6 +257,7 @@ pyinstaller --onefile --name sysdash main.py
 - [x] Aranabilir, sıralanabilir process tablosu
 - [x] Process sonlandırma
 - [x] Koyu / açık tema
+- [x] Otomatik testler ve CI
 - [ ] Process detay penceresi (thread'ler, açık dosyalar, ağ bağlantıları)
 - [ ] Process ağacı görünümü
 - [ ] Ağ ve disk okuma/yazma hızları
@@ -258,11 +266,38 @@ pyinstaller --onefile --name sysdash main.py
 - [ ] Geçmiş ölçümlerin kaydı ve dışa aktarma
 - [ ] Güvenlik paneli: şüpheli processler ve dinleyen portlar
 
+## Geliştirme
+
+Geliştirme araçlarını sanal ortamına kur:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+Kod standardını kontrol et ve testleri çalıştır:
+
+```bash
+ruff check .
+pytest
+```
+
+Testler ekran olmadan çalışır (Qt'nin offscreen modu); bu yüzden SSH üzerinden ve CI'da da çalışırlar. Kapsadıkları:
+
+| Test dosyası | Neyi kontrol eder? |
+|---|---|
+| `test_formatting.py` | Bayt ve süre biçimlendirme |
+| `test_collector.py` | Gerçek sistemde veri toplama; ayrıca sahte psutil verisiyle birebir davranış (atlanan dosya sistemleri, eksik değerler, CPU oranlama) |
+| `test_process_model.py` | Process tablosunun güncellenmesi: satır ekleme, çıkarma ve yerinde güncelleme; biçimlendirme ve sıralama değerleri |
+| `test_theme.py` | Uyarı eşikleri ve temalar arası geçiş |
+| `test_main_window.py` | Gerçek pencereyi oluşturur, gerçek veriyle besler ve bütün sayfaları kontrol eder |
+
+[GitHub Actions](https://github.com/1Batuhan1/Health-Dashboard/actions/workflows/ci.yml) aynı kontrolleri her push ve pull request'te Python 3.10 ve 3.13 ile çalıştırır; en üstteki CI rozeti son sonucu gösterir.
+
 ## Katkıda bulunma
 
 1. Depoyu fork'la
 2. Yeni bir branch aç: `git checkout -b feature/ozellik-adi`
-3. Değişikliklerini commit'le: `git commit -m "Yeni özellik: ..."`
+3. Değişikliklerini commit'le: `git commit -m "Yeni özellik: ..."` (öncesinde `ruff check .` ve `pytest` çalıştır)
 4. Branch'ini gönder: `git push origin feature/ozellik-adi`
 5. Bir Pull Request aç
 
