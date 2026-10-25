@@ -19,8 +19,6 @@ CPU, RAM, disk, sıcaklık ve en önemlisi çalışan processleri tek pencerede,
 
 </div>
 
-> Uygulamanın arayüzü İngilizcedir.
-
 ---
 
 ## İçindekiler
