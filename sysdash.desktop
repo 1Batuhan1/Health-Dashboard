@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=SysDash
-Comment=Sistem sağlığı: CPU, RAM, disk, sıcaklık ve processler
+Comment=System health: CPU, RAM, disk, temperature and processes
 Exec=/opt/sysdash/sysdash
 Icon=utilities-system-monitor
 Terminal=false

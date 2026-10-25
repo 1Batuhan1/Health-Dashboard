@@ -7,32 +7,32 @@ SORT_ROLE = Qt.UserRole
 
 COLUMNS = [
     ("PID", "pid"),
-    ("İsim", "name"),
-    ("Kullanıcı", "username"),
+    ("Name", "name"),
+    ("User", "username"),
     ("CPU %", "cpu_percent"),
-    ("Bellek", "rss"),
+    ("Memory", "rss"),
     ("RAM %", "memory_percent"),
-    ("Thread", "threads"),
-    ("Durum", "status"),
-    ("Komut", "cmdline"),
+    ("Threads", "threads"),
+    ("Status", "status"),
+    ("Command", "cmdline"),
 ]
 CPU_COLUMN = 3
 STATUS_COLUMN = 7
 RIGHT_ALIGNED_KEYS = {"pid", "rss", "memory_percent", "threads"}
 MONO_KEYS = RIGHT_ALIGNED_KEYS | {"cpu_percent"}
 
-# Turkish labels for psutil status names (search also matches these labels)
+# Display labels for psutil status names (search also matches these labels)
 STATUS_LABELS = {
-    "running": "çalışıyor",
-    "sleeping": "uyuyor",
-    "idle": "boşta",
-    "disk-sleep": "G/Ç bekliyor",
-    "stopped": "durdu",
-    "tracing-stop": "izleniyor",
-    "zombie": "zombi",
-    "dead": "öldü",
-    "waking": "uyanıyor",
-    "parked": "park",
+    "running": "running",
+    "sleeping": "sleeping",
+    "idle": "idle",
+    "disk-sleep": "I/O wait",
+    "stopped": "stopped",
+    "tracing-stop": "traced",
+    "zombie": "zombie",
+    "dead": "dead",
+    "waking": "waking",
+    "parked": "parked",
 }
 
 

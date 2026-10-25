@@ -11,8 +11,8 @@ def format_duration(seconds):
     hours, minutes = divmod(minutes, 60)
     parts = []
     if days:
-        parts.append(f"{days} gün")
+        parts.append(f"{days}d")
     if days or hours:
-        parts.append(f"{hours} sa")
-    parts.append(f"{minutes} dk")
+        parts.append(f"{hours}h")
+    parts.append(f"{minutes}m")
     return " ".join(parts)
