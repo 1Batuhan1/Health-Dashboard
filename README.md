@@ -11,8 +11,6 @@ Shows CPU, RAM, disk, temperature and, most importantly, running processes in a 
 ![Platform](https://img.shields.io/badge/Platform-Linux-FCC624?logo=linux&logoColor=black)
 ![Last commit](https://img.shields.io/github/last-commit/1Batuhan1/Health-Dashboard)
 
-**English** · [Türkçe](README.tr.md)
-
 <br>
 
 <img src="screenshots/overview.png" alt="SysDash overview page with CPU, RAM, disk and temperature cards above the process table" width="900">
