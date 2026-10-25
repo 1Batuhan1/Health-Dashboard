@@ -14,7 +14,7 @@ import pyqtgraph as pg
 from PySide6.QtCore import (QObject, QSettings, QSize, QSortFilterProxyModel, Qt, QThread,
                             QTimer, Signal, Slot)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QButtonGroup, QFrame,
-                               QGridLayout, QHBoxLayout, QHeaderView, QLabel, QLineEdit,
+                               QGridLayout, QHBoxLayout, QLineEdit,
                                QMainWindow, QMenu, QMessageBox, QScrollArea, QStackedWidget,
                                QTableView, QToolButton, QVBoxLayout, QWidget)
 
@@ -98,7 +98,7 @@ class MainWindow(QMainWindow):
         layout.addLayout(content, 1)
         self.setCentralWidget(root)
 
-        self._show_page(0)
+        self.show_page(0)
         self._start_worker()
 
     # --- Yan menü -----------------------------------------------------------
@@ -121,7 +121,7 @@ class MainWindow(QMainWindow):
             self.nav_group.addButton(button, index)
             self.nav_buttons.append((button, icon_name))
             layout.addWidget(button, 0, Qt.AlignHCenter)
-        self.nav_group.idClicked.connect(self._show_page)
+        self.nav_group.idClicked.connect(self.show_page)
 
         layout.addStretch()
         self.theme_button = self._sidebar_button("Temayı değiştir")
@@ -145,7 +145,7 @@ class MainWindow(QMainWindow):
         self.search.removeAction(self.search_action)
         self.search_action = self.search.addAction(icon("mdi6.magnify", "muted"), QLineEdit.LeadingPosition)
 
-    def _show_page(self, index):
+    def show_page(self, index):
         self.nav_group.button(index).setChecked(True)
         self.stack.setCurrentIndex(index)
         self.page_title.setText(PAGES[index][0])
@@ -244,7 +244,8 @@ class MainWindow(QMainWindow):
         layout.setSpacing(14)
         layout.addWidget(ChartCard("CPU kullanımı", "Son 3 dakika, %", self.cpu_chart), 0, 0)
         layout.addWidget(ChartCard("RAM kullanımı", "Son 3 dakika, %", self.ram_chart), 0, 1)
-        layout.addWidget(ChartCard("Çekirdekler", "Çekirdek başına anlık kullanım, %", self.core_bars), 1, 0, 1, 2)
+        cores = ChartCard("Çekirdekler", "Çekirdek başına anlık kullanım, %", self.core_bars)
+        layout.addWidget(cores, 1, 0, 1, 2)
         return page
 
     def _build_disk_page(self):
@@ -358,7 +359,7 @@ class MainWindow(QMainWindow):
         keys = [f"{t['chip']}/{t['label']}" for t in temps]
         self._sync_rows(self._sensor_rows, self.sensor_list, keys,
                         lambda: LevelRow("mdi6.thermometer", "pink"))
-        for key, t in zip(keys, temps):
+        for key, t in zip(keys, temps, strict=True):
             limit = t["high"] or 100
             self._sensor_rows[key].set_values(
                 t["label"], t["chip"], f"üst sınır {limit:.0f} °C", f"{t['current']:.0f} °C",
@@ -410,7 +411,8 @@ class MainWindow(QMainWindow):
 
 def main():
     parser = argparse.ArgumentParser(description="SysDash sistem sağlığı uygulaması")
-    parser.add_argument("--theme", choices=["dark", "light"], help="kayıtlı temayı bu açılış için geçersiz kıl")
+    parser.add_argument("--theme", choices=["dark", "light"],
+                        help="kayıtlı temayı bu açılış için geçersiz kıl")
     parser.add_argument("--page", type=int, default=0, help="açılışta gösterilecek sayfa (0-3)")
     parser.add_argument("--screenshot", metavar="DOSYA",
                         help="birkaç yenilemeden sonra pencere görüntüsünü kaydet ve kapan")
@@ -430,7 +432,7 @@ def main():
     theme.apply(app, theme_name)
 
     window = MainWindow(settings, save_theme=args.theme is None)
-    window._show_page(args.page)
+    window.show_page(args.page)
     window.show()
 
     if args.screenshot:

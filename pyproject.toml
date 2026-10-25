@@ -1,0 +1,15 @@
+# Kod standartları: ruff ile kontrol edilir
+#   pip install ruff
+#   ruff check .
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+# E/W: PEP 8 · F: pyflakes (kullanılmayan kod) · B: yaygın hata kalıpları · N: adlandırma
+select = ["E", "W", "F", "B", "N"]
+ignore = [
+    "N802",  # Qt'nin zorunlu kıldığı metot adları: paintEvent, rowCount, headerData...
+    "B008",  # parent=QModelIndex() Qt'nin standart kullanımı
+]
