@@ -1,8 +1,8 @@
-"""Sistem metriklerini psutil ile toplar.
+"""Collects system metrics with psutil.
 
-Bu modülü yalnızca tek bir yerden (CollectorWorker) ve düzenli aralıklarla çağır:
-cpu_percent() değerleri iki çağrı arasındaki farktan hesaplanır, başka bir yerden
-de çağrılırsa ölçüm aralıkları karışır.
+Call this module from a single place only (CollectorWorker), at a regular interval:
+cpu_percent() values are calculated from the difference between two calls, so calling
+it from anywhere else would mix up the measurement intervals.
 """
 import time
 
@@ -17,7 +17,7 @@ PROC_ATTRS = ["pid", "name", "username", "cpu_percent", "memory_percent",
 def _cpu_freq_mhz():
     try:
         freq = psutil.cpu_freq()
-    except (OSError, NotImplementedError):  # bazı sanal makinelerde yok
+    except (OSError, NotImplementedError):  # not available on some virtual machines
         return None
     return freq.current if freq else None
 
@@ -51,7 +51,7 @@ def disks():
             continue
         try:
             usage = psutil.disk_usage(part.mountpoint)
-        except OSError:  # yetki yok ya da sürücü hazır değil (boş CD vb.)
+        except OSError:  # no permission, or the drive isn't ready (empty CD drive, etc.)
             continue
         result.append({"mount": part.mountpoint, "fstype": part.fstype,
                        "total": usage.total, "used": usage.used, "percent": usage.percent})
@@ -59,7 +59,7 @@ def disks():
 
 
 def temperatures():
-    if not hasattr(psutil, "sensors_temperatures"):  # Windows/macOS'ta yok
+    if not hasattr(psutil, "sensors_temperatures"):  # not available on Windows/macOS
         return []
     try:
         chips = psutil.sensors_temperatures()
@@ -72,16 +72,16 @@ def temperatures():
 
 def processes():
     result = []
-    for proc in psutil.process_iter(PROC_ATTRS):  # NoSuchProcess/AccessDenied'ı kendisi yakalar
+    for proc in psutil.process_iter(PROC_ATTRS):  # handles NoSuchProcess/AccessDenied itself
         info = proc.info
-        if info["pid"] == 0:  # Windows'taki "System Idle Process"
+        if info["pid"] == 0:  # "System Idle Process" on Windows
             continue
         mem = info["memory_info"]
         result.append({
             "pid": info["pid"],
             "name": info["name"] or "?",
             "username": info["username"] or "-",
-            # htop gibi çekirdek başına değil, tüm CPU'ya oranla göster (toplam en fazla %100)
+            # relative to total CPU capacity rather than per core like htop (sums to at most 100%)
             "cpu_percent": round((info["cpu_percent"] or 0) / CPU_COUNT, 1),
             "memory_percent": round(info["memory_percent"] or 0, 1),
             "rss": mem.rss if mem else 0,
@@ -106,10 +106,10 @@ def snapshot():
 
 
 if __name__ == "__main__":
-    # Arayüz olmadan hızlı test: python collector.py
+    # Quick test without the UI: python collector.py
     import json
 
-    snapshot()  # ilk cpu_percent ölçümü her zaman 0 döner
+    snapshot()  # the first cpu_percent measurement always returns 0
     time.sleep(1)
     data = snapshot()
     data["processes"] = sorted(data["processes"], key=lambda p: p["cpu_percent"], reverse=True)[:5]

@@ -1,7 +1,7 @@
-"""Koyu ve açık tema: renk paleti, Qt stil sayfası (QSS) ve yazı tipleri.
+"""Dark and light themes: color palette, Qt style sheet (QSS) and fonts.
 
-Özel çizilen bileşenler renkleri her çizimde `theme.current` üzerinden okur;
-böylece tema değişince yalnızca yeniden çizilmeleri yeterli olur.
+Custom-painted widgets read their colors from `theme.current` on every paint,
+so when the theme changes they only need to be repainted.
 """
 from dataclasses import dataclass
 
@@ -34,7 +34,7 @@ class Theme:
         return color
 
     def soft(self, key, alpha=0.16):
-        """QSS için yarı saydam renk: rgba(...)"""
+        """Semi-transparent color for QSS: rgba(...)"""
         c = QColor(getattr(self, key))
         return f"rgba({c.red()}, {c.green()}, {c.blue()}, {alpha})"
 
@@ -54,7 +54,7 @@ LIGHT = Theme(
 THEMES = {"dark": DARK, "light": LIGHT}
 current = DARK
 
-# Listedeki ilk kurulu yazı tipi kullanılır (Kali/Debian: fonts-inter, fonts-jetbrains-mono)
+# The first installed font in each list is used (Kali/Debian: fonts-inter, fonts-jetbrains-mono)
 UI_FONTS = ["Inter", "Segoe UI", "Cantarell", "Noto Sans", "DejaVu Sans"]
 MONO_FONTS = ["JetBrains Mono", "Cascadia Mono", "Fira Mono", "DejaVu Sans Mono", "Consolas"]
 
@@ -76,7 +76,7 @@ def mono_font(point_size=10, weight=QFont.Weight.Normal):
 
 
 def level_color(percent, base, warn=70, critical=90):
-    """Değer eşikleri aşınca kategori rengi yerine uyarı rengini döndür."""
+    """Return a warning color instead of the category color once the value crosses a threshold."""
     if percent >= critical:
         return "red"
     if percent >= warn:

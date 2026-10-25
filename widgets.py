@@ -1,7 +1,7 @@
-"""Arayüz bileşenleri: göstergeler, mini grafikler, kartlar ve satırlar.
+"""UI widgets: gauges, sparklines, cards and rows.
 
-Özel çizilen bileşenler renklerini her paintEvent'te `theme.current`'tan okur.
-`refresh_theme()` metodu olan bileşenler tema değişince ana pencere tarafından çağrılır.
+Custom-painted widgets read their colors from `theme.current` in every paintEvent.
+Widgets with a `refresh_theme()` method are called by the main window when the theme changes.
 """
 from collections import deque
 
@@ -30,7 +30,7 @@ class IconLabel(QLabel):
 
 
 class Card(QFrame):
-    """Yuvarlak köşeli, kenarlıklı yüzey (stili theme.py'deki #card kuralından gelir)."""
+    """Rounded, bordered surface (styled by the #card rule in theme.py)."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -46,10 +46,10 @@ def styled_label(text="", object_name=None, font=None):
     return label
 
 
-# --- Özel çizilen bileşenler ------------------------------------------------
+# --- Custom-painted widgets -------------------------------------------------
 
 class RingGauge(QWidget):
-    """Dairesel yüzde göstergesi; değer değişince yumuşakça dolar."""
+    """Circular percentage gauge that fills smoothly when the value changes."""
 
     def __init__(self, size=58, thickness=6, parent=None):
         super().__init__(parent)
@@ -92,13 +92,13 @@ class RingGauge(QWidget):
         if self._value > 0.5:
             pen.setColor(QColor(getattr(t, self.color_key)))
             painter.setPen(pen)
-            painter.drawArc(rect, 90 * 16, -int(self._value / 100 * 360 * 16))  # saat yönünde, tepeden
+            painter.drawArc(rect, 90 * 16, -int(self._value / 100 * 360 * 16))  # clockwise, starting at the top
 
 
 class Sparkline(QWidget):
-    """Kart altındaki küçük eğilim grafiği."""
+    """Small trend chart at the bottom of a card."""
 
-    def __init__(self, points=30, y_max=100, parent=None):  # 30 ölçüm ≈ son 1 dakika
+    def __init__(self, points=30, y_max=100, parent=None):  # 30 samples ≈ the last minute
         super().__init__(parent)
         self.setFixedHeight(36)
         self.points, self.y_max = points, y_max
@@ -118,7 +118,7 @@ class Sparkline(QWidget):
 
         width, height = self.width(), self.height() - 3
         step = width / (self.points - 1)
-        x0 = width - step * (len(self.history) - 1)  # sağdan dolsun
+        x0 = width - step * (len(self.history) - 1)  # fill in from the right
         points = [QPointF(x0 + i * step, 1.5 + height - min(v, self.y_max) / self.y_max * height)
                   for i, v in enumerate(self.history)]
 
@@ -137,7 +137,7 @@ class Sparkline(QWidget):
 
 
 class LevelBar(QWidget):
-    """İnce, yuvarlak uçlu doluluk çubuğu."""
+    """Thin usage bar with rounded ends."""
 
     def __init__(self, height=8, parent=None):
         super().__init__(parent)
@@ -166,10 +166,10 @@ class LevelBar(QWidget):
             painter.drawRoundedRect(fill, radius, radius)
 
 
-# --- Kartlar ------------------------------------------------------------------
+# --- Cards --------------------------------------------------------------------
 
 class MetricCard(Card):
-    """Özet kartı: simge + başlık, büyük değer, dairesel gösterge ve mini grafik."""
+    """Summary card: icon and title, large value, ring gauge and sparkline."""
 
     def __init__(self, title, icon_name, color_key, parent=None):
         super().__init__(parent)
@@ -214,7 +214,7 @@ class MetricCard(Card):
 
 
 class HistoryChart(pg.PlotWidget):
-    """Son N ölçümün alanı dolu çizgi grafiği."""
+    """Filled line chart of the last N samples."""
 
     def __init__(self, color_key, points=90, interval_s=2, y_max=100, parent=None):
         super().__init__(parent)
@@ -242,7 +242,7 @@ class HistoryChart(pg.PlotWidget):
 
 
 class CoreBars(pg.PlotWidget):
-    """Çekirdek başına anlık CPU kullanımı."""
+    """Current CPU usage per core."""
 
     def __init__(self, count, color_key, parent=None):
         super().__init__(parent)
@@ -277,7 +277,7 @@ def _style_plot(plot, t):
 
 
 class ChartCard(Card):
-    """Başlıklı grafik kartı."""
+    """Chart card with a title."""
 
     def __init__(self, title, subtitle, chart, parent=None):
         super().__init__(parent)
@@ -289,7 +289,7 @@ class ChartCard(Card):
 
 
 class LevelRow(Card):
-    """Disk ve sensör listelerindeki satır: simge, ad, değer ve doluluk çubuğu."""
+    """Row in the disk and sensor lists: icon, name, value and usage bar."""
 
     def __init__(self, icon_name, color_key, parent=None):
         super().__init__(parent)

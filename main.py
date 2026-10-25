@@ -1,8 +1,8 @@
-"""SysDash: Linux sistem sağlığı masaüstü uygulaması.
+"""SysDash: a system health desktop app for Linux.
 
-Çalıştırma:  python main.py
-Geliştirme:  python main.py --screenshot ekran.png --page 0 --theme light
-             (birkaç yenilemeden sonra görüntü alıp kapanır)
+Run:          python main.py
+Development:  python main.py --screenshot screen.png --page 0 --theme light
+              (takes a screenshot after a few refreshes, then exits)
 """
 import argparse
 import os
@@ -27,7 +27,7 @@ from widgets import (Card, ChartCard, CoreBars, EmptyState, HistoryChart, IconLa
                      MetricCard, icon, styled_label)
 
 REFRESH_MS = 2000
-ROOT_MOUNT = os.path.abspath(os.sep)  # Linux'ta "/", Windows'ta "C:\"
+ROOT_MOUNT = os.path.abspath(os.sep)  # "/" on Linux, "C:\" on Windows
 PAGES = [
     ("Genel bakış", "mdi6.view-dashboard-outline"),
     ("Performans", "mdi6.chart-line"),
@@ -37,13 +37,13 @@ PAGES = [
 
 
 class CollectorWorker(QObject):
-    """Veriyi arka plan thread'inde toplar; arayüz donmaz."""
+    """Collects data on a background thread so the UI doesn't freeze."""
 
     updated = Signal(dict)
 
     @Slot()
     def start(self):
-        collector.snapshot()  # ilk cpu_percent ölçümü 0 döner, onu at
+        collector.snapshot()  # the first cpu_percent measurement returns 0; discard it
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.collect)
         self.timer.start(REFRESH_MS)
@@ -101,7 +101,7 @@ class MainWindow(QMainWindow):
         self.show_page(0)
         self._start_worker()
 
-    # --- Yan menü -----------------------------------------------------------
+    # --- Sidebar ------------------------------------------------------------
 
     def _build_sidebar(self):
         sidebar = QFrame()
@@ -162,7 +162,7 @@ class MainWindow(QMainWindow):
             widget.update()
         self._refresh_sidebar_icons()
 
-    # --- Sayfalar -----------------------------------------------------------
+    # --- Pages --------------------------------------------------------------
 
     def _build_overview_page(self):
         self.cpu_card = MetricCard("CPU", "mdi6.chip", "blue")
@@ -187,7 +187,7 @@ class MainWindow(QMainWindow):
         self.proxy = QSortFilterProxyModel(self)
         self.proxy.setSourceModel(self.process_model)
         self.proxy.setSortRole(SORT_ROLE)
-        self.proxy.setFilterKeyColumn(-1)  # tüm sütunlarda ara
+        self.proxy.setFilterKeyColumn(-1)  # search across all columns
         self.proxy.setFilterCaseSensitivity(Qt.CaseInsensitive)
 
         self.search = QLineEdit(placeholderText="İsim, kullanıcı, PID veya komut ara")
@@ -277,15 +277,15 @@ class MainWindow(QMainWindow):
         scroll.setWidget(container)
         return scroll
 
-    # --- Veri akışı ---------------------------------------------------------
+    # --- Data flow ----------------------------------------------------------
 
     def _start_worker(self):
-        # Not: QObject.thread() metodunu gölgelememek için adı worker_thread
+        # Named worker_thread so it doesn't shadow QObject.thread()
         self.worker_thread = QThread(self)
         self.worker = CollectorWorker()
         self.worker.moveToThread(self.worker_thread)
         self.worker_thread.started.connect(self.worker.start)
-        # Arayüze yalnızca ana thread dokunabilir; bağlantıyı açıkça kuyruklu yap
+        # Only the main thread may touch the UI; make the connection explicitly queued
         self.worker.updated.connect(self.on_update, Qt.QueuedConnection)
         self.worker_thread.start()
 
@@ -335,7 +335,7 @@ class MainWindow(QMainWindow):
                                   theme.level_color(hottest["current"], "pink", 70, 85), hottest["current"])
 
     def _sync_rows(self, rows, list_layout, keys, factory):
-        """Disk/sensör listesi değiştiyse satırları ekle ya da çıkar."""
+        """Add or remove rows when the list of disks or sensors changes."""
         for key in list(rows):
             if key not in keys:
                 rows.pop(key).deleteLater()
@@ -343,7 +343,7 @@ class MainWindow(QMainWindow):
             if key not in rows:
                 rows[key] = factory()
                 list_layout.addWidget(rows[key])
-                rows[key].show()  # görünür bir sayfaya sonradan eklenen widget kendiliğinden görünmez
+                rows[key].show()  # a widget added to an already visible page isn't shown automatically
 
     def _update_disk_rows(self, disks):
         self._sync_rows(self._disk_rows, self.disk_list, [d["mount"] for d in disks],
@@ -365,7 +365,7 @@ class MainWindow(QMainWindow):
                 t["label"], t["chip"], f"üst sınır {limit:.0f} °C", f"{t['current']:.0f} °C",
                 t["current"] / limit * 100, theme.level_color(t["current"], "pink", 70, 85))
 
-    # --- Process işlemleri --------------------------------------------------
+    # --- Process actions ----------------------------------------------------
 
     def _show_process_menu(self, pos):
         index = self.table.indexAt(pos)
@@ -390,14 +390,14 @@ class MainWindow(QMainWindow):
             return
         try:
             p = psutil.Process(proc["pid"])
-            if p.create_time() != proc["create_time"]:  # PID bu arada başka bir process'e geçmiş
+            if p.create_time() != proc["create_time"]:  # the PID has been reused by another process in the meantime
                 return
             if force:
                 p.kill()
             else:
                 p.terminate()
         except psutil.NoSuchProcess:
-            pass  # zaten kapanmış
+            pass  # already exited
         except psutil.AccessDenied:
             QMessageBox.warning(self, "Yetki yok",
                                 "Bu process başka bir kullanıcıya ait.\n"
@@ -421,7 +421,7 @@ def main():
 
     app = QApplication(sys.argv)
     app.setApplicationName("SysDash")
-    app.setDesktopFileName("sysdash")  # Wayland'de .desktop dosyası ve simgeyle eşleşir
+    app.setDesktopFileName("sysdash")  # matches the .desktop file and icon on Wayland
     app.setStyle("Fusion")
     app.setFont(theme.ui_font(10))
     pg.setConfigOptions(antialias=True)

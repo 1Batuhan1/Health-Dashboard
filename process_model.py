@@ -21,7 +21,7 @@ STATUS_COLUMN = 7
 RIGHT_ALIGNED_KEYS = {"pid", "rss", "memory_percent", "threads"}
 MONO_KEYS = RIGHT_ALIGNED_KEYS | {"cpu_percent"}
 
-# psutil durum adlarının Türkçe karşılıkları (arama da bu metinler üzerinde çalışır)
+# Turkish labels for psutil status names (search also matches these labels)
 STATUS_LABELS = {
     "running": "çalışıyor",
     "sleeping": "uyuyor",
@@ -37,8 +37,8 @@ STATUS_LABELS = {
 
 
 class ProcessModel(QAbstractTableModel):
-    """Process listesi. Her yenilemede tabloyu sıfırlamak yerine satırları PID'ye
-    göre günceller; böylece seçili satır ve kaydırma konumu korunur."""
+    """Process list. Instead of resetting the table on every refresh, rows are
+    updated by PID, so the selected row and scroll position are kept."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -93,7 +93,7 @@ class ProcessModel(QAbstractTableModel):
     def update(self, processes):
         incoming = {p["pid"]: p for p in processes}
 
-        # Kapanan processleri çıkar, devam edenleri yerinde güncelle
+        # Remove processes that have exited and update the remaining ones in place
         for row in range(len(self.rows) - 1, -1, -1):
             pid = self.rows[row]["pid"]
             if pid in incoming:
@@ -106,7 +106,7 @@ class ProcessModel(QAbstractTableModel):
             self.dataChanged.emit(self.index(0, 0),
                                   self.index(len(self.rows) - 1, len(COLUMNS) - 1))
 
-        # Yeni başlayan processleri ekle
+        # Add newly started processes
         if incoming:
             start = len(self.rows)
             self.beginInsertRows(QModelIndex(), start, start + len(incoming) - 1)

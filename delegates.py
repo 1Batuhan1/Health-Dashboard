@@ -1,4 +1,4 @@
-"""Process tablosundaki özel hücreler: renkli CPU çubuğu ve durum etiketi."""
+"""Custom cells in the process table: colored CPU bar and status badge."""
 from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QColor, QFontMetrics, QPainter
 from PySide6.QtWidgets import QApplication, QStyle, QStyledItemDelegate, QStyleOptionViewItem
@@ -19,7 +19,7 @@ STATUS_COLORS = {
 
 
 def _draw_background(option, index, painter, delegate):
-    """Seçim ve hover arka planını stile çizdir, metni biz çizeceğiz."""
+    """Let the style draw the selection and hover background; we draw the text ourselves."""
     opt = QStyleOptionViewItem(option)
     delegate.initStyleOption(opt, index)
     text = opt.text
@@ -30,9 +30,9 @@ def _draw_background(option, index, painter, delegate):
 
 
 class CpuBarDelegate(QStyledItemDelegate):
-    """CPU yüzdesinin yanında yüke göre maviden turuncuya ve kırmızıya dönen çubuk."""
+    """A bar next to the CPU percentage that turns from blue to orange to red with load."""
 
-    WARN, CRITICAL = 10, 40  # toplam CPU'ya oranlı: 8 çekirdekte tek çekirdeği dolduran ≈ %12,5
+    WARN, CRITICAL = 10, 40  # relative to total CPU: one fully busy core on an 8-core machine ≈ 12.5%
 
     def paint(self, painter, option, index):
         opt, text = _draw_background(option, index, painter, self)
@@ -62,7 +62,7 @@ class CpuBarDelegate(QStyledItemDelegate):
 
 
 class StatusDelegate(QStyledItemDelegate):
-    """Durumu renkli, yuvarlak bir etiket olarak gösterir."""
+    """Shows the status as a colored, rounded badge."""
 
     def paint(self, painter, option, index):
         opt, text = _draw_background(option, index, painter, self)
