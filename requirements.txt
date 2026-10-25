@@ -1,0 +1,4 @@
+PySide6>=6.6
+pyqtgraph>=0.13
+psutil>=5.9
+qtawesome>=1.3
