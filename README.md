@@ -19,8 +19,6 @@ Shows CPU, RAM, disk, temperature and, most importantly, running processes in a 
 
 </div>
 
-> The app's user interface is in Turkish.
-
 ---
 
 ## Table of contents
@@ -244,7 +242,7 @@ You can place the resulting `dist/sysdash` file in, for example, `/opt/sysdash/`
 | `externally-managed-environment` | The virtual environment isn't active: `source .venv/bin/activate` |
 | Temperatures page is empty | Expected in a virtual machine. On physical hardware: `sudo apt install lm-sensors && sudo sensors-detect` |
 | Window doesn't open on Wayland | Try `QT_QPA_PLATFORM=xcb python main.py` |
-| "Yetki yok" (permission denied) warning | The process belongs to another user; use `pkexec kill <PID>` from a terminal |
+| "Permission denied" warning | The process belongs to another user; use `pkexec kill <PID>` from a terminal |
 
 ## Roadmap
 

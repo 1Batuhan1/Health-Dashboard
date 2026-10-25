@@ -29,10 +29,10 @@ from widgets import (Card, ChartCard, CoreBars, EmptyState, HistoryChart, IconLa
 REFRESH_MS = 2000
 ROOT_MOUNT = os.path.abspath(os.sep)  # "/" on Linux, "C:\" on Windows
 PAGES = [
-    ("Genel bakış", "mdi6.view-dashboard-outline"),
-    ("Performans", "mdi6.chart-line"),
-    ("Diskler", "mdi6.harddisk"),
-    ("Sıcaklıklar", "mdi6.thermometer"),
+    ("Overview", "mdi6.view-dashboard-outline"),
+    ("Performance", "mdi6.chart-line"),
+    ("Disks", "mdi6.harddisk"),
+    ("Temperatures", "mdi6.thermometer"),
 ]
 
 
@@ -59,7 +59,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.settings = settings
         self.save_theme = save_theme
-        self.setWindowTitle("SysDash — Sistem Sağlığı")
+        self.setWindowTitle("SysDash — System Health")
         self.setWindowIcon(icon("mdi6.pulse", "blue"))
         self.resize(1240, 800)
         self.setMinimumSize(1000, 680)
@@ -73,7 +73,7 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self._build_temp_page())
 
         self.page_title = styled_label(PAGES[0][0], "pageTitle")
-        self.page_subtitle = styled_label("Veriler toplanıyor…", "muted")
+        self.page_subtitle = styled_label("Collecting data…", "muted")
         titles = QVBoxLayout()
         titles.setSpacing(0)
         titles.addWidget(self.page_title)
@@ -81,7 +81,7 @@ class MainWindow(QMainWindow):
         header = QHBoxLayout()
         header.addLayout(titles)
         header.addStretch()
-        header.addWidget(styled_label("●  Canlı", "live"))
+        header.addWidget(styled_label("●  Live", "live"))
 
         content = QVBoxLayout()
         content.setContentsMargins(24, 20, 24, 20)
@@ -124,7 +124,7 @@ class MainWindow(QMainWindow):
         self.nav_group.idClicked.connect(self.show_page)
 
         layout.addStretch()
-        self.theme_button = self._sidebar_button("Temayı değiştir")
+        self.theme_button = self._sidebar_button("Toggle theme")
         self.theme_button.clicked.connect(self.toggle_theme)
         layout.addWidget(self.theme_button, 0, Qt.AlignHCenter)
         return sidebar
@@ -168,7 +168,7 @@ class MainWindow(QMainWindow):
         self.cpu_card = MetricCard("CPU", "mdi6.chip", "blue")
         self.ram_card = MetricCard("RAM", "mdi6.memory", "purple")
         self.disk_card = MetricCard("Disk", "mdi6.harddisk", "teal")
-        self.temp_card = MetricCard("Sıcaklık", "mdi6.thermometer", "pink")
+        self.temp_card = MetricCard("Temperature", "mdi6.thermometer", "pink")
         cards = QHBoxLayout()
         cards.setSpacing(14)
         for card in (self.cpu_card, self.ram_card, self.disk_card, self.temp_card):
@@ -190,7 +190,7 @@ class MainWindow(QMainWindow):
         self.proxy.setFilterKeyColumn(-1)  # search across all columns
         self.proxy.setFilterCaseSensitivity(Qt.CaseInsensitive)
 
-        self.search = QLineEdit(placeholderText="İsim, kullanıcı, PID veya komut ara")
+        self.search = QLineEdit(placeholderText="Search by name, user, PID or command")
         self.search.setClearButtonEnabled(True)
         self.search.setFixedWidth(300)
         self.search_action = self.search.addAction(icon("mdi6.magnify", "muted"), QLineEdit.LeadingPosition)
@@ -219,7 +219,7 @@ class MainWindow(QMainWindow):
 
         self.process_count = styled_label("", "muted")
         top = QHBoxLayout()
-        top.addWidget(styled_label("Processler", "cardTitle"))
+        top.addWidget(styled_label("Processes", "cardTitle"))
         top.addWidget(self.process_count)
         top.addStretch()
         top.addWidget(self.search)
@@ -242,9 +242,9 @@ class MainWindow(QMainWindow):
         layout = QGridLayout(page)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(14)
-        layout.addWidget(ChartCard("CPU kullanımı", "Son 3 dakika, %", self.cpu_chart), 0, 0)
-        layout.addWidget(ChartCard("RAM kullanımı", "Son 3 dakika, %", self.ram_chart), 0, 1)
-        cores = ChartCard("Çekirdekler", "Çekirdek başına anlık kullanım, %", self.core_bars)
+        layout.addWidget(ChartCard("CPU usage", "Last 3 minutes, %", self.cpu_chart), 0, 0)
+        layout.addWidget(ChartCard("RAM usage", "Last 3 minutes, %", self.ram_chart), 0, 1)
+        cores = ChartCard("Cores", "Current usage per core, %", self.core_bars)
         layout.addWidget(cores, 1, 0, 1, 2)
         return page
 
@@ -255,9 +255,9 @@ class MainWindow(QMainWindow):
 
     def _build_temp_page(self):
         self.temp_empty = EmptyState(
-            "mdi6.thermometer-off", "Sıcaklık sensörü bulunamadı",
-            "Sanal makinede, WSL'de ve Windows'ta bu normaldir. Fiziksel bir Linux "
-            "makinede lm-sensors paketini kurup 'sudo sensors-detect' çalıştırmayı dene.")
+            "mdi6.thermometer-off", "No temperature sensors found",
+            "This is normal in virtual machines, WSL and Windows. On a physical Linux "
+            "machine, try installing the lm-sensors package and running 'sudo sensors-detect'.")
         self.sensor_list = QVBoxLayout()
         self.sensor_list.setSpacing(12)
         self.sensor_list.addWidget(self.temp_empty)
@@ -294,11 +294,11 @@ class MainWindow(QMainWindow):
         cpu, mem = data["cpu"], data["memory"]
 
         freq = f" · {cpu['freq_mhz'] / 1000:.2f} GHz" if cpu["freq_mhz"] else ""
-        self.cpu_card.set_values(f"%{cpu['total']:.1f}", cpu["total"],
-                                 f"{collector.CPU_COUNT} çekirdek{freq}",
+        cores = f"{collector.CPU_COUNT} core{'s' if collector.CPU_COUNT != 1 else ''}"
+        self.cpu_card.set_values(f"{cpu['total']:.1f}%", cpu["total"], f"{cores}{freq}",
                                  theme.level_color(cpu["total"], "blue"), cpu["total"])
-        swap = f" · swap %{mem['swap_percent']:.0f}" if mem["swap_total"] else ""
-        self.ram_card.set_values(f"%{mem['percent']:.1f}", mem["percent"],
+        swap = f" · swap {mem['swap_percent']:.0f}%" if mem["swap_total"] else ""
+        self.ram_card.set_values(f"{mem['percent']:.1f}%", mem["percent"],
                                  f"{format_bytes(mem['used'])} / {format_bytes(mem['total'])}{swap}",
                                  theme.level_color(mem["percent"], "purple", 80, 92), mem["percent"])
         self._update_disk_card(data["disks"])
@@ -314,21 +314,21 @@ class MainWindow(QMainWindow):
         self._update_sensor_rows(data["temps"])
 
         load = " ".join(f"{x:.2f}" for x in cpu["load_avg"])
-        self.page_subtitle.setText(f"{self.hostname}  ·  çalışma süresi {format_duration(data['uptime'])}"
-                                   f"  ·  yük {load}")
+        self.page_subtitle.setText(f"{self.hostname}  ·  up {format_duration(data['uptime'])}"
+                                   f"  ·  load {load}")
 
     def _update_disk_card(self, disks):
         disk = next((d for d in disks if d["mount"] == ROOT_MOUNT), disks[0] if disks else None)
         if disk is None:
-            self.disk_card.set_values("—", 0, "Disk bulunamadı", "teal")
+            self.disk_card.set_values("—", 0, "No disks found", "teal")
             return
-        self.disk_card.set_values(f"%{disk['percent']:.0f}", disk["percent"],
+        self.disk_card.set_values(f"{disk['percent']:.0f}%", disk["percent"],
                                   f"{disk['mount']} · {format_bytes(disk['used'])} / {format_bytes(disk['total'])}",
                                   theme.level_color(disk["percent"], "teal", 80, 90), disk["percent"])
 
     def _update_temp_card(self, temps):
         if not temps:
-            self.temp_card.set_values("—", 0, "Sensör bulunamadı", "pink")
+            self.temp_card.set_values("—", 0, "No sensors found", "pink")
             return
         hottest = max(temps, key=lambda t: t["current"])
         self.temp_card.set_values(f"{hottest['current']:.0f} °C", hottest["current"], hottest["label"],
@@ -351,7 +351,7 @@ class MainWindow(QMainWindow):
         for d in disks:
             self._disk_rows[d["mount"]].set_values(
                 d["mount"], d["fstype"],
-                f"{format_bytes(d['used'])} / {format_bytes(d['total'])}", f"%{d['percent']:.0f}",
+                f"{format_bytes(d['used'])} / {format_bytes(d['total'])}", f"{d['percent']:.0f}%",
                 d["percent"], theme.level_color(d["percent"], "teal", 80, 90))
 
     def _update_sensor_rows(self, temps):
@@ -362,7 +362,7 @@ class MainWindow(QMainWindow):
         for key, t in zip(keys, temps, strict=True):
             limit = t["high"] or 100
             self._sensor_rows[key].set_values(
-                t["label"], t["chip"], f"üst sınır {limit:.0f} °C", f"{t['current']:.0f} °C",
+                t["label"], t["chip"], f"limit {limit:.0f} °C", f"{t['current']:.0f} °C",
                 t["current"] / limit * 100, theme.level_color(t["current"], "pink", 70, 85))
 
     # --- Process actions ----------------------------------------------------
@@ -374,8 +374,8 @@ class MainWindow(QMainWindow):
         proc = self.process_model.row_at(self.proxy.mapToSource(index).row())
 
         menu = QMenu(self)
-        terminate = menu.addAction(icon("mdi6.close-circle-outline", "amber"), "Sonlandır (SIGTERM)")
-        kill = menu.addAction(icon("mdi6.skull-outline", "red"), "Zorla öldür (SIGKILL)")
+        terminate = menu.addAction(icon("mdi6.close-circle-outline", "amber"), "Terminate (SIGTERM)")
+        kill = menu.addAction(icon("mdi6.skull-outline", "red"), "Force kill (SIGKILL)")
         chosen = menu.exec(self.table.viewport().mapToGlobal(pos))
         if chosen is terminate:
             self._stop_process(proc, force=False)
@@ -383,9 +383,9 @@ class MainWindow(QMainWindow):
             self._stop_process(proc, force=True)
 
     def _stop_process(self, proc, force):
-        verb = "zorla öldürülsün" if force else "sonlandırılsın"
-        answer = QMessageBox.question(self, "Process'i durdur",
-                                      f"{proc['name']} (PID {proc['pid']}) {verb} mi?")
+        verb = "Force kill" if force else "Terminate"
+        answer = QMessageBox.question(self, "Stop process",
+                                      f"{verb} {proc['name']} (PID {proc['pid']})?")
         if answer != QMessageBox.Yes:
             return
         try:
@@ -399,9 +399,9 @@ class MainWindow(QMainWindow):
         except psutil.NoSuchProcess:
             pass  # already exited
         except psutil.AccessDenied:
-            QMessageBox.warning(self, "Yetki yok",
-                                "Bu process başka bir kullanıcıya ait.\n"
-                                f"Linux'ta terminalden 'pkexec kill {proc['pid']}' ile durdurabilirsin.")
+            QMessageBox.warning(self, "Permission denied",
+                                "This process belongs to another user.\n"
+                                f"On Linux you can stop it from a terminal with 'pkexec kill {proc['pid']}'.")
 
     def closeEvent(self, event):
         self.worker_thread.quit()
@@ -410,13 +410,13 @@ class MainWindow(QMainWindow):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="SysDash sistem sağlığı uygulaması")
+    parser = argparse.ArgumentParser(description="SysDash system health app")
     parser.add_argument("--theme", choices=["dark", "light"],
-                        help="kayıtlı temayı bu açılış için geçersiz kıl")
-    parser.add_argument("--page", type=int, default=0, help="açılışta gösterilecek sayfa (0-3)")
-    parser.add_argument("--screenshot", metavar="DOSYA",
-                        help="birkaç yenilemeden sonra pencere görüntüsünü kaydet ve kapan")
-    parser.add_argument("--delay", type=float, default=9, help="--screenshot için bekleme süresi (saniye)")
+                        help="override the saved theme for this launch only")
+    parser.add_argument("--page", type=int, default=0, help="page to show on launch (0-3)")
+    parser.add_argument("--screenshot", metavar="FILE",
+                        help="save a screenshot of the window after a few refreshes, then exit")
+    parser.add_argument("--delay", type=float, default=9, help="seconds to wait before --screenshot")
     args = parser.parse_args()
 
     app = QApplication(sys.argv)

@@ -19,6 +19,8 @@ CPU, RAM, disk, sıcaklık ve en önemlisi çalışan processleri tek pencerede,
 
 </div>
 
+> Uygulamanın arayüzü İngilizcedir.
+
 ---
 
 ## İçindekiler
@@ -52,7 +54,7 @@ CPU, RAM, disk, sıcaklık ve en önemlisi çalışan processleri tek pencerede,
 - **Canlı process tablosu:** PID, isim, kullanıcı, CPU, bellek, RAM %, thread sayısı, durum ve komut
 - **Arama:** isim, kullanıcı, PID, komut ve durum dahil tüm sütunlarda anında filtreleme
 - **Sıralama:** herhangi bir sütun başlığına tıklayarak
-- **Yüke göre renklenen CPU çubukları** ve **renkli durum etiketleri** (çalışıyor, uyuyor, zombi…)
+- **Yüke göre renklenen CPU çubukları** ve **renkli durum etiketleri** (running, sleeping, zombie…)
 - **Sağ tık menüsü:** process'i sonlandırma (SIGTERM) veya zorla öldürme (SIGKILL), onay penceresiyle
 - **Akıllı güncelleme:** tablo her yenilemede sıfırlanmaz; seçili satır ve kaydırma konumu korunur
 
@@ -129,7 +131,7 @@ python collector.py
 | Seçenek | Açıklama |
 |---|---|
 | `--theme dark\|light` | Kayıtlı temayı yalnızca bu açılış için geçersiz kılar |
-| `--page 0-3` | Açılışta gösterilecek sayfa (0: Genel bakış, 1: Performans, 2: Diskler, 3: Sıcaklıklar) |
+| `--page 0-3` | Açılışta gösterilecek sayfa (0: Overview, 1: Performance, 2: Disks, 3: Temperatures) |
 | `--screenshot DOSYA` | Pencerenin görüntüsünü kaydedip kapanır (geliştirme için) |
 | `--delay SANİYE` | `--screenshot` öncesi bekleme süresi (varsayılan 9) |
 
@@ -242,7 +244,7 @@ pyinstaller --onefile --name sysdash main.py
 | `externally-managed-environment` | Sanal ortam etkin değil: `source .venv/bin/activate` |
 | Sıcaklık sayfası boş | Sanal makinede normaldir. Fiziksel makinede `sudo apt install lm-sensors && sudo sensors-detect` |
 | Wayland'de pencere açılmıyor | `QT_QPA_PLATFORM=xcb python main.py` ile dene |
-| "Yetki yok" uyarısı | Process başka bir kullanıcıya ait; terminalden `pkexec kill <PID>` kullan |
+| "Permission denied" uyarısı | Process başka bir kullanıcıya ait; terminalden `pkexec kill <PID>` kullan |
 
 ## Yol haritası
 

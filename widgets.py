@@ -236,7 +236,7 @@ class HistoryChart(pg.PlotWidget):
     def refresh_theme(self):
         t = theme.current
         _style_plot(self, t)
-        self.setLabel("bottom", "saniye önce", color=t.muted)
+        self.setLabel("bottom", "seconds ago", color=t.muted)
         self.curve.setPen(pg.mkPen(t.color(self.color_key), width=2))
         self.curve.setBrush(t.color(self.color_key, 0.16))
 
